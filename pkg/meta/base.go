@@ -40,8 +40,13 @@ import (
 )
 
 const (
-	sliceIdBatch = 4 << 10
 	nlocks       = 1024
+	// I'm hardcoding batchModulus for now since it makes no sense as a mount
+	// parameter.  It would be good to make a filesystem creation parameter
+	// similar to compression.  It's critical to NEVER change it once the
+	// filesystem is in use, since that could cause corruption (since the algorithm
+    // for inode allocation would break).
+	batchModulus = 1024
 )
 
 var maxCompactSlices = 1000
@@ -946,11 +951,11 @@ func (m *baseMeta) nextInode() (Ino, error) {
 	m.freeMu.Lock()
 	defer m.freeMu.Unlock()
 	if m.freeInodes.next >= m.freeInodes.maxid {
-		v, err := m.en.incrCounter("nextInode", m.conf.InodeBatchSize)
+		v, err := m.en.incrCounter("nextInode", int64(m.conf.BatchSize))
 		if err != nil {
 			return 0, err
 		}
-		m.freeInodes.next = uint64(v) - uint64(m.conf.InodeBatchSize)
+		m.freeInodes.next = uint64(v) - uint64(m.conf.BatchSize)
 		m.freeInodes.maxid = uint64(v)
 	}
 	n := m.freeInodes.next
@@ -959,7 +964,7 @@ func (m *baseMeta) nextInode() (Ino, error) {
 		n = m.freeInodes.next
 		m.freeInodes.next++
 	}
-	return Ino(n), nil
+	return Ino(n*batchModulus + m.conf.ClientId), nil
 }
 
 func (m *baseMeta) Mknod(ctx Context, parent Ino, name string, _type uint8, mode, cumask uint16, rdev uint32, path string, inode *Ino, attr *Attr) syscall.Errno {
@@ -1433,14 +1438,14 @@ func (m *baseMeta) NewSlice(ctx Context, id *uint64) syscall.Errno {
 	m.freeMu.Lock()
 	defer m.freeMu.Unlock()
 	if m.freeSlices.next >= m.freeSlices.maxid {
-		v, err := m.en.incrCounter("nextChunk", sliceIdBatch)
+		v, err := m.en.incrCounter("nextChunk", int64(m.conf.BatchSize))
 		if err != nil {
 			return errno(err)
 		}
-		m.freeSlices.next = uint64(v) - sliceIdBatch
+		m.freeSlices.next = uint64(v) - uint64(m.conf.BatchSize)
 		m.freeSlices.maxid = uint64(v)
 	}
-	*id = m.freeSlices.next
+	*id = m.freeSlices.next*batchModulus + m.conf.ClientId
 	m.freeSlices.next++
 	return 0
 }

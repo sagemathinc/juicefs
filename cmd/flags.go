@@ -280,20 +280,20 @@ func metaFlags() []cli.Flag {
 			Value: "100ms",
 			Usage: "skip updating attribute of a directory if the mtime difference is smaller than this value",
 		},
+		// I made the batch size configurable, not that we need to change it for prod but so that it is
+		// very easy to reproduce the motivation for the client-id below.  Set
+		// batch-size to something very small and it is easy to get in a situation where inodes
+		// overlap on different clients and the filesystem becomes corrupted (e.g., git clone the same big
+		// repo at the same time on multiple clients at once).
 		&cli.IntFlag{
-			Name:  "inode-batch-size",
+			Name:  "batch-size",
 			Value: 1024,
-			Usage: "the inode batch size",
+			Usage: "the batch size used for inode and slice ids. Set to something small to greatly increase the chances of filesystem corruption if you write form multiple clients and do not properly set client-id.",
 		},
 		&cli.IntFlag{
-			Name:  "inode-batch-modulus",
-			Value: 1,
-			Usage: "the inode batch modulus",
-		},
-		&cli.IntFlag{
-			Name:  "inode-batch-residue",
+			Name:  "client-id",
 			Value: 0,
-			Usage: "the inode batch residue",
+			Usage: "numerical id with 0 <= client-id < 1024 that you should explicitly assign to this client.  These client-id's should be DISTINCT between all current mounted clients!  The client id is used to ensure that there is no overlap between clients when assigning inode and slice ids.  This is critical to support asynchronous replication using Redis.",
 		},
 	})
 }

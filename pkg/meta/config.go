@@ -49,9 +49,8 @@ type Config struct {
 	DirStatFlushPeriod time.Duration
 	SkipDirMtime       time.Duration
 	Sid                uint64
-	InodeBatchSize     int64
-	InodeBatchModulus  uint64
-	InodeBatchResidue  uint64
+	BatchSize          int
+	ClientId           uint64
 }
 
 func DefaultConf() *Config {
@@ -67,8 +66,18 @@ func (c *Config) SelfCheck() {
 		c.Heartbeat = time.Second
 	}
 	if c.Heartbeat > time.Minute*10 {
-		logger.Warnf("heartbeat shouldd not be greater than 10 minutes")
+		logger.Warnf("heartbeat should not be greater than 10 minutes")
 		c.Heartbeat = time.Minute * 10
+	}
+	if c.ClientId >= 1024 {
+		logger.Warnf("client-id must be less than 1024")
+		// This should probably be fatal.  Doing the following is letting something potentially dangerous
+		// happen.  However, the default of 0 is even more dangerous.
+		c.ClientId = c.ClientId % 1024
+	}
+	if c.BatchSize <= 1 {
+		logger.Warnf("batch-size must be at least 2")
+		c.BatchSize = 2
 	}
 }
 
