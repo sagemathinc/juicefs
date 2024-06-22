@@ -40,7 +40,6 @@ import (
 )
 
 const (
-	inodeBatch   = 1 << 10
 	sliceIdBatch = 4 << 10
 	nlocks       = 1024
 )
@@ -947,11 +946,11 @@ func (m *baseMeta) nextInode() (Ino, error) {
 	m.freeMu.Lock()
 	defer m.freeMu.Unlock()
 	if m.freeInodes.next >= m.freeInodes.maxid {
-		v, err := m.en.incrCounter("nextInode", inodeBatch)
+		v, err := m.en.incrCounter("nextInode", m.conf.InodeBatchSize)
 		if err != nil {
 			return 0, err
 		}
-		m.freeInodes.next = uint64(v) - inodeBatch
+		m.freeInodes.next = uint64(v) - uint64(m.conf.InodeBatchSize)
 		m.freeInodes.maxid = uint64(v)
 	}
 	n := m.freeInodes.next
