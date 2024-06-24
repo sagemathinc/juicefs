@@ -76,8 +76,8 @@ func (c *Config) SelfCheck() {
 		c.ClientId = c.ClientId % 1024
 	}
 	if c.BatchSize <= 1 {
-		logger.Warnf("batch-size must be at least 2")
-		c.BatchSize = 2
+		logger.Warnf("using default batch-size")
+		c.BatchSize = 4 << 10
 	}
 }
 
