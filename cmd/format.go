@@ -198,7 +198,11 @@ func formatManagementFlags() []cli.Flag {
 }
 
 func fixObjectSize(s uint64) uint64 {
-	const min, max = 64 << 10, 16 << 20
+	// NOTE: I changed this to allow 64MB, since bigger can save a LOT
+	// of money on Google Cloud.  The lead dev of JuiceFS refused to support
+	// this change due to it complicating heuristics, as explained here:
+	//    https://github.com/juicedata/juicefs/issues/3287
+	const min, max = 64 << 10, 16 << 22
 	var bits uint
 	for s > 1 {
 		bits++
