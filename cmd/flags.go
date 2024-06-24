@@ -287,7 +287,7 @@ func metaFlags() []cli.Flag {
 		// repo at the same time on multiple clients at once).
 		&cli.IntFlag{
 			Name:  "batch-size",
-			Value: 1024,
+			Value: 4 << 10,
 			Usage: "the batch size used for inode and slice ids. Set to something small to greatly increase the chances of filesystem corruption if you write form multiple clients and do not properly set client-id.",
 		},
 		&cli.IntFlag{
