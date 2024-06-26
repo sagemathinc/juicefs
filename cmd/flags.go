@@ -280,6 +280,21 @@ func metaFlags() []cli.Flag {
 			Value: "100ms",
 			Usage: "skip updating attribute of a directory if the mtime difference is smaller than this value",
 		},
+		&cli.IntFlag{
+			Name:  "inode-batch-size",
+			Value: 1024,
+			Usage: "the inode batch size",
+		},
+		&cli.IntFlag{
+			Name:  "inode-batch-modulus",
+			Value: 1,
+			Usage: "the inode batch modulus",
+		},
+		&cli.IntFlag{
+			Name:  "inode-batch-residue",
+			Value: 0,
+			Usage: "the inode batch residue",
+		},
 	})
 }
 

@@ -49,6 +49,9 @@ type Config struct {
 	DirStatFlushPeriod time.Duration
 	SkipDirMtime       time.Duration
 	Sid                uint64
+	InodeBatchSize     int64
+	InodeBatchModulus  uint64
+	InodeBatchResidue  uint64
 }
 
 func DefaultConf() *Config {

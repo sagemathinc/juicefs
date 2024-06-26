@@ -311,6 +311,9 @@ func getMetaConf(c *cli.Context, mp string, readOnly bool) *meta.Config {
 	conf.Subdir = c.String("subdir")
 	conf.SkipDirMtime = utils.Duration(c.String("skip-dir-mtime"))
 	conf.Sid, _ = strconv.ParseUint(os.Getenv("_JFS_META_SID"), 10, 64)
+	conf.InodeBatchSize = c.Int64("inode-batch-size")
+	conf.InodeBatchModulus = c.Uint64("inode-batch-modulus")
+	conf.InodeBatchResidue = c.Uint64("inode-batch-residue")
 
 	atimeMode := c.String("atime-mode")
 	if atimeMode != meta.RelAtime && atimeMode != meta.StrictAtime && atimeMode != meta.NoAtime {
